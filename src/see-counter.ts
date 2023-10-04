@@ -1,11 +1,11 @@
 import {
   createAztecRpcClient,
-  getEcdsaAccount,
+  getSchnorrAccount,
   GrumpkinScalar,
   Wallet
 } from '@aztec/aztec.js'
 import { envGet, hexToBuffer, toAddr } from './utils.js'
-import { PrivateCounterContract } from './contracts/types/PrivateCounter.ts'
+import { PrivateCounterContract } from './contracts/types/PrivateCounter.js'
 
 const SANDBOX_URL = process.env['SANDBOX_URL'] || 'http://localhost:8080'
 const PRIV_KEY = hexToBuffer(envGet('PRIV_KEY'))
@@ -25,10 +25,11 @@ async function main() {
 
   const firstComplete = await rpc.getRegisteredAccount(MAIN_ADDR)
 
-  const account = await getEcdsaAccount(
+  const mainGrumpScalar = GrumpkinScalar.fromBuffer(PRIV_KEY)
+  const account = await getSchnorrAccount(
     rpc,
-    GrumpkinScalar.fromBuffer(PRIV_KEY),
-    PRIV_KEY,
+    mainGrumpScalar,
+    mainGrumpScalar,
     firstComplete
   ).getWallet()
   console.log('account.address:', account.getAddress().toString())
@@ -37,7 +38,6 @@ async function main() {
 
   const getCount = async (c: PrivateCounterContract, f: string) => {
     console.log('f:', f)
-    console.log('c.abi:', c.abi.functions)
     console.log('counter.methods:', c.methods)
     const count = await c.methods
       .get_counter(account.getAddress().toField())
@@ -56,7 +56,7 @@ async function main() {
   const receipt = await tx.wait()
   console.log(`Transaction has been mined on block ${receipt.blockNumber}`)
 
-  await getCount()
+  await getCount(counter, 'lol')
 }
 
 main().then(() => process.exit(0))
