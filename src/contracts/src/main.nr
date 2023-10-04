@@ -36,20 +36,17 @@ contract PrivateCounter {
 
     #[aztec(private)]
     fn constructor(initial_count: u120, owner: Field) {
-        let storage = Storage::init(Context::private(&mut context));
         let counts = storage.counts;
         counts.at(owner).add(initial_count, owner);
     }
 
     #[aztec(private)]
     fn increment(owner: Field)  {
-        let storage = Storage::init(Context::private(&mut context));
         let counts = storage.counts;
         counts.at(owner).add(1, owner);
     }
 
     unconstrained fn get_counter(owner: Field) -> Field {
-        let storage = Storage::init(Context::none());
         let counts = storage.counts;
         balance_utils::get_balance(counts.at(owner).set)
     }
